@@ -31,11 +31,16 @@ public class Person
 
     public Person(Person? parent = null)
     {
+        MaxAge = RandomGenerator.GetRandomDeathAge();
+
         if (parent == null)
         {
             CurrentName += 1;
             Surname = CurrentName;
-            CurrentAge = (int)RandomGenerator.GetRandomExponential(80);
+
+            //Start the initial population out with a random age, no greater than 80% of their death age
+            //Real-world global average age is ~30
+            CurrentAge = (int)Math.Min(MaxAge * 0.8, RandomGenerator.GenerateGaussianRandomNumber(30, 3.5));
         }
         else
         {
@@ -47,7 +52,6 @@ public class Person
 
         CurrentChildCount = 0;
         MaxChildren = RandomGenerator.GetMaxChildCount();
-        MaxAge = RandomGenerator.GetRandomDeathAge();
         ChildDifficulty = RandomGenerator.GetRandomInteger(0, 100 + 1) / 100.0;
         ChildYearsStart = RandomGenerator.GetRandomInteger(10, 15 + 1);
         ChildYearsEnd = RandomGenerator.GetRandomInteger(30, 50 + 1);

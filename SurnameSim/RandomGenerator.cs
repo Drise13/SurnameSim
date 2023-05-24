@@ -1,6 +1,7 @@
 ﻿namespace SurnameSim;
 
 using MoreLinq;
+using System;
 
 /// <summary>
 ///     Convenience class for dealing with randomness.
@@ -152,6 +153,17 @@ public static class RandomGenerator
     public static double GetRandomExponential(double scale)
     {
         return -Math.Log(ThreadLocalRandom.NextDouble()) * scale;
+    }
+
+    public static double GenerateGaussianRandomNumber(double mean, double standardDeviation)
+    {
+        var u1 = 1.0 - ThreadLocalRandom.NextDouble();
+        var u2 = 1.0 - ThreadLocalRandom.NextDouble();
+
+        var z0 = Math.Sqrt(-2.0 * Math.Log(u1)) * Math.Cos(2.0 * Math.PI * u2); // Box-Muller transform
+        var randomNumber = mean + z0 * standardDeviation; // Apply mean and standard deviation
+
+        return randomNumber;
     }
 
     public static int GetMaxChildCount()

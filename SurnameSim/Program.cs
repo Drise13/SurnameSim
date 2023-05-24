@@ -79,8 +79,6 @@ void GainChildren()
     }
 }
 
-Console.WriteLine("Hello, World!");
-
 foreach (var year in Enumerable.Range(0, 500))
 {
     stats.Year = year;
