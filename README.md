@@ -6,9 +6,9 @@ This is a C# conversion from my original work [published on CodeReview](https://
 
 ## Features
 
-- Age simulation: The simulation ages the population and removes individuals who reach a certain age (determined by the `age` method of the `Person` class).
+- Age simulation: The simulation ages the population and removes individuals who reach a certain age (or die by other causes not related to their max age) (determined by the `Age` method of the `Person` class).
 - Partner matching: Eligible individuals are paired up based on their gender and eligibility criteria (defined in the `GainPartners` method).
-- Childbirth: Individuals with a child attribute set to `true` (determined by the `withChild` property of the `Person` class) can have children. The `HaveChildren` method handles childbirth and adds the new children to the population.
+- Childbirth: Individuals with a child attribute set to `true` (determined by the `WithChild` property of the `Person` class) can have children. The `HaveChildren` method handles childbirth and adds the new children to the population.
 - Children acquisition: Individuals attempt to gain new children, and the `GainChildren` method handles this process.
 - Statistics tracking: The program tracks various statistics such as population size, mean age, new people, deaths, delta new people, delta deaths, surnames count, net population change, and partner percentage (calculated in the `PrintStats` method).
 
