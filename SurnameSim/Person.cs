@@ -8,6 +8,8 @@ public enum Gender
 
 public class Person
 {
+    private readonly int _yearBorn;
+    private readonly (Person maleParent, Person femaleParent) _parents;
     public static int CurrentName;
     public static int Deaths;
 
@@ -23,20 +25,24 @@ public class Person
     public int CurrentChildCount;
 
     public bool HasHadPartner;
+    public bool IsDead;
 
     public Person? Partner;
 
-    public int Surname;
+    public int CurrentSurname;
+    public int OriginalSurname;
     public bool WithChild;
 
-    public Person(Person? parent = null)
+    public Person(int yearBorn, (Person maleParent, Person femaleParent) parents = default)
     {
+        _yearBorn = yearBorn;
+        _parents = parents;
         MaxAge = RandomGenerator.GetRandomDeathAge();
 
-        if (parent == null)
+        if (parents == default)
         {
             CurrentName += 1;
-            Surname = CurrentName;
+            CurrentSurname = CurrentName;
 
             //Start the initial population out with a random age, no greater than 80% of their death age
             //Real-world global average age is ~30
@@ -45,8 +51,10 @@ public class Person
         else
         {
             CurrentAge = 0;
-            Surname = parent.Surname;
+            CurrentSurname = parents.maleParent.CurrentSurname;
         }
+
+        OriginalSurname = CurrentSurname;
 
         Gender = RandomGenerator.GetRandomFromEnum<Gender>();
 
@@ -79,7 +87,7 @@ public class Person
     public override string ToString()
     {
         return
-            $"Person(Gender: {Gender,6}, Surname: {Surname,5}, Age: {CurrentAge,2}, MaxAge: {MaxAge,2}, Children: {CurrentChildCount,3}, " +
+            $"Person(Gender: {Gender,6}, Surname: {CurrentSurname,5}, Age: {CurrentAge,2}, MaxAge: {MaxAge,2}, Children: {CurrentChildCount,3}, " +
             $"MaxChildren: {MaxChildren,3}, Partner: {Partner != null,6}, PartnerEligibleAge: {PartnerEligibleAge,3})";
     }
 
@@ -90,7 +98,7 @@ public class Person
         {
             if (Gender == Gender.Female)
             {
-                Surname = newPartner.Surname;
+                CurrentSurname = newPartner.CurrentSurname;
             }
 
             Partner = newPartner;
@@ -123,7 +131,7 @@ public class Person
     public void GainChild()
     {
         // gain a child if eligible and passes a "difficulty" check
-        if (IsChildEligible())
+        if (IsChildEligible() && Partner != null)
         {
             var chance = 1.0 - ChildDifficulty * Partner.ChildDifficulty;
 
@@ -135,10 +143,10 @@ public class Person
     }
 
     // if this modifier is set too low, not enough children are created and the population dies
-    public Person? HaveChild(double modifier = 2.0)
+    public Person? HaveChild(int currentYear, double modifier = 2.0)
     {
         // produce child if they currently have one and pass a modified "difficulty" check
-        if (WithChild)
+        if (WithChild && Partner != null)
         {
             WithChild = false;
             var chance = 1.0 - ChildDifficulty;
@@ -147,7 +155,10 @@ public class Person
             {
                 CurrentChildCount += 1;
 
-                return new Person(this);
+                if (Partner != null)
+                {
+                    return new Person(currentYear, (Partner, this));
+                }
             }
         }
 
@@ -156,20 +167,11 @@ public class Person
 
     public bool Die()
     {
-        // if they have a partner, remove themselves from that person
-        if (Partner != null)
-        {
-            Partner.Partner = null;
-        }
+        IsDead = true;
 
         Deaths += 1;
 
         return true;
-    }
-
-    public bool HasPartner()
-    {
-        return Partner != null;
     }
 
     // check if person can have a child
@@ -178,17 +180,18 @@ public class Person
         // Criteria:
         // only females can have children
         // they must have a partner
+        // that partner must be alive
+        // they don't currently have a child
         // they haven't had more than their max children
         // they are within child bearing years, and so is their partner
-        // they don't currently have a child
         return Gender == Gender.Female &&
-               Partner != null &&
+               Partner is { IsDead: false } &&
+               !WithChild &&
                CurrentChildCount < MaxChildren &&
                ChildYearsStart <= CurrentAge &&
                CurrentAge <= ChildYearsEnd &&
                Partner.ChildYearsStart <= Partner.CurrentAge &&
-               Partner.CurrentAge <= Partner.ChildYearsEnd &&
-               !WithChild;
+               Partner.CurrentAge <= Partner.ChildYearsEnd;
     }
 
     // check if person can gain a partner

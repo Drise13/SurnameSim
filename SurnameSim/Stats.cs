@@ -1,4 +1,4 @@
-﻿namespace SurnameSim;
+namespace SurnameSim;
 
 public class Stats
 {
@@ -17,7 +17,7 @@ public class Stats
     public double StatYear;
     public List<int> Surnames;
     public List<double> TimeTaken;
-    public double Year;
+    public int Year;
 
     public Stats(DateTime oldDate, IReadOnlyList<Person> people, double statYear = 100)
     {
@@ -61,7 +61,7 @@ public class Stats
         var population = _people.Count;
         Population.Add(population);
 
-        var meanAge = _people.Count > 0 ? (int)Math.Floor(_people.Select(p => p.CurrentAge).Average()) : 0;
+        var meanAge = _people.Count > 0 ? (int)Math.Floor(_people.AsParallel().Select(p => p.CurrentAge).Average()) : 0;
         MeanAge.Add(meanAge);
 
         NewPeople.Add(NewPersonCount);
@@ -69,7 +69,7 @@ public class Stats
         OldPeople = NewPersonCount;
         DeltaNewPeople.Add(peopleDelta);
 
-        var surnameCount = _people.Count > 0 ? StatsHelper.CountItems(_people.Select(p => p.Surname)) : 0;
+        var surnameCount = _people.Count > 0 ? StatsHelper.CountItems(_people.AsParallel().Select(p => p.CurrentSurname)) : 0;
         Surnames.Add(surnameCount);
 
         Deaths.Add(Person.Deaths);

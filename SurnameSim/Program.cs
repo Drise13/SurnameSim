@@ -1,10 +1,10 @@
-﻿// See https://aka.ms/new-console-template for more information
+// See https://aka.ms/new-console-template for more information
 
 using MoreLinq;
 
 using SurnameSim;
 
-var people = new List<Person>(Enumerable.Range(0, 10000).AsParallel().Select(_ => new Person()));
+var people = new List<Person>(Enumerable.Range(0, 10000).AsParallel().Select(_ => new Person(0)));
 var stats = new Stats(DateTime.Now, people);
 
 double Sim()
@@ -58,7 +58,7 @@ double HaveChildren()
     foreach (var newChild in people.ToList()
                  .AsParallel()
                  .Where(p => p.WithChild)
-                 .Select(p => p.HaveChild(1.0)))
+                 .Select(p => p.HaveChild(stats.Year, 1.0)))
     {
         if (newChild != null)
         {
@@ -73,13 +73,10 @@ double HaveChildren()
 
 void GainChildren()
 {
-    foreach (var p in people)
-    {
-        p.GainChild();
-    }
+    people.AsParallel().ForEach(p => p.GainChild());
 }
 
-foreach (var year in Enumerable.Range(0, 500))
+foreach (var year in Enumerable.Range(0, 30))
 {
     stats.Year = year;
 
@@ -98,3 +95,5 @@ foreach (var year in Enumerable.Range(0, 500))
 
     stats.NewPersonCount += Sim();
 }
+
+stats.PrintStats();
