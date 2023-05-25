@@ -2,7 +2,7 @@
 
 This is a population simulation program written in C#. It simulates the dynamics of a population by modeling individuals and their interactions. The simulation tracks various statistics and provides insights into the population's characteristics over time.
 
-This is a C# conversion from my original work [published on CodeReview](https://codereview.stackexchange.com/q/189168/13738)
+This is a C# conversion from my original work [published on CodeReview](https://codereview.stackexchange.com/q/189168/13738) with a few upgrades and tweaks for performance opprtunities provided by C#, mostly using [AsParallel](https://learn.microsoft.com/en-us/dotnet/api/system.linq.parallelenumerable.asparallel?view=net-7.0).
 
 ## Features
 
@@ -11,6 +11,14 @@ This is a C# conversion from my original work [published on CodeReview](https://
 - Childbirth: Individuals with a child attribute set to `true` (determined by the `WithChild` property of the `Person` class) can have children. The `HaveChildren` method handles childbirth and adds the new children to the population.
 - Children acquisition: Individuals attempt to gain new children, and the `GainChildren` method handles this process.
 - Statistics tracking: The program tracks various statistics such as population size, mean age, new people, deaths, delta new people, delta deaths, surnames count, net population change, and partner percentage (calculated in the `PrintStats` method).
+
+## Why?
+
+I was curious about how surnames come and go (mostly on the go). I wanted to know how quickly surnames die out, because (in my simplified simulation world) once the last person with a surname dies, it's gone forever. I started writing a small simulation to see this happen in "real time". I started with a simple "person" representation that behaved exactly like all the other "persons" in the simulation. However, as I got into the project, I started coming up with certain traits, since not everyone lives to the same age, not everyone has the same number of children, not everyone pairs up to even have children, etc.
+
+[The Atlantic notes that for China, with 1.3 *billion* people, *87%* of the population shares *only 100 unique surnames.*](https://www.theatlantic.com/china/archive/2013/10/the-geographic-distribution-of-chinas-last-names-in-maps/280776/)
+
+ >For a country of 1.3 billion people, there is a remarkably small number of common last names in China. An estimated 87 percent of the population shares one of 100 surnames, and more than one in five Chinese citizens is surnamed Li, Wang, or Zhang: more than 275 million people in all. 
 
 ## Assumptions
 
@@ -41,6 +49,26 @@ The program consists of the following components:
 - `Main` method: Serves as the entry point of the program. It initializes the population and `Stats` object, performs the simulation over a specified number of years, and calls the `PrintStats` method at regular intervals.
 
 Customize the simulation by modifying the `Sim` method and the relevant logic within the `Person` class.
+
+## Upgrade ideas
+
+- **Advanced Data Analysis**: Implement a data analysis module that collects and analyzes lifetime statistics, tracks the lifespan of individuals, monitors the occurrence of surname extinction, estimates birth rates, and provides insights into various population dynamics. This module can generate reports, charts, and visualizations to help understand the patterns and trends within the simulated population.
+
+- **Realism Tweaks**: Provide an easy-to-use interface or configuration options to adjust the simulation parameters and make the population dynamics more realistic. Users can tweak parameters such as birth rates, lifespan distributions, partner matching criteria, and other factors to observe how these changes impact the simulated population. This flexibility allows for experimentation and fine-tuning to achieve desired results or reflect real-world scenarios.
+
+- **Social Dynamics**: Enhance the simulation by incorporating social dynamics and relationships between individuals. Introduce factors such as friendship networks, social influence, and social interactions that affect partner selection, childbirth decisions, and overall population dynamics. This addition can provide a more realistic representation of how social relationships impact the growth and evolution of a population.
+
+- **Genetic Inheritance**: Extend the simulation to include genetic inheritance. Introduce genetic traits with inheritance rules, such as eye color or genetic predispositions to certain diseases. Individuals can pass down these traits to their offspring, allowing for the study of genetic variations within the simulated population and how they evolve over time.
+
+- **Environmental Factors**: Integrate environmental factors into the simulation to explore their impact on population dynamics. Consider factors such as resource availability, natural disasters, climate change, or disease outbreaks. These factors can influence birth rates, mortality rates, migration patterns, and other population behaviors, adding another layer of complexity to the simulation.
+
+- **Interactive Visualization**: Develop an interactive visualization component that allows users to observe the population simulation in real-time or explore historical data. This can include visual representations of population size, age distributions, surname trends, and other relevant statistics. Users can interact with the visualization to gain insights into the population dynamics and explore different scenarios.
+
+- **Machine Learning Integration**: Integrate machine learning algorithms to enhance the simulation's capabilities. For example, use machine learning techniques to train models that predict future population trends, identify patterns of surname extinction, or optimize parameters for more realistic simulation outcomes. Machine learning can add a predictive and adaptive aspect to the simulation, enabling it to learn from data and make informed decisions and provide interesting insights that I wouldn't come up with myself.
+
+## Concerns
+
+One notable concern in the current simulation is the rapid extinction of surnames during the early stages of the simulation. This phenomenon raises questions about the accuracy and realism of the simulated population dynamics. When printing statistics at 1 year intervals, I noticed that the simulation has a lot of population decline as the simulation "primes" itself for growth later on. This has a side effect of a large portion of the surname pool going extinct very early in the sim. 
 
 ## Example run (copied from the original runset)
 
