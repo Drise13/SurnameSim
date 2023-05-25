@@ -12,6 +12,17 @@ This is a C# conversion from my original work [published on CodeReview](https://
 - Children acquisition: Individuals attempt to gain new children, and the `GainChildren` method handles this process.
 - Statistics tracking: The program tracks various statistics such as population size, mean age, new people, deaths, delta new people, delta deaths, surnames count, net population change, and partner percentage (calculated in the `PrintStats` method).
 
+## Assumptions
+
+1. I didn't base this simulation on any actual population statistics, though I think it does a decent job at producing some interesting results.
+2. Surnames do not regenerate. The starting population each gets a unique "name" (an integer one greater than the last), and that forms the maximum amount of names in the simulation.
+3. This is paternally biased. To keep things simple, females of the population take the male surname when paired. Surnames are never combined (see point 2), or modified in any way. This simulation would work the same (mostly?) if maternally biased, though I suppose at that point males are only needed for population growth (topic not relevant for this simulation, just some side thoughts).
+4. Surnames are inherited from the parent. I didn't originally consider this an assumption, but this is not always true in every culture, with Iceland being the example (Icelandic surnames are paternal first names appended with `-son` or `-dattir` depending on gender. If Oluf had a son Jón, he would be named Jón Olufsson).
+5. People die when they reach their maximum lifespan, but can also die early due to "accidents", being more prone the older they are.
+6. When a person with a partner dies, the surviving partner does not gain a new partner.
+7. Exponential distributions are used here to help move away from uniform distributions, since I found that uniform populations die really easily. An example would be that a Person is more likely to have a life span of 80 than 20, but that drops off significantly past 80.
+
+
 ## Getting Started
 
 1. Clone the repository: `git clone https://github.com/your/repository.git`
