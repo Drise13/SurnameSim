@@ -1,54 +1,44 @@
-namespace SurnameSim;
+﻿namespace SurnameSim;
 
 public class Stats
 {
+    public readonly int YearToPrintStats;
     private readonly IReadOnlyList<Person> _people;
-    public List<double> Deaths;
-    public List<double> DeltaDeaths;
-    public List<double> DeltaNewPeople;
-    public List<double> MeanAge;
-    public List<double> NetPopDelta;
-    public List<double> NewPeople;
-    public double NewPersonCount;
-    public DateTime OldDate;
-    public double OldDeaths;
-    public double OldPeople;
-    public List<double> Population;
-    public double StatYear;
-    public List<int> Surnames;
-    public List<double> TimeTaken;
-    public int Year;
 
-    public Stats(DateTime oldDate, IReadOnlyList<Person> people, double statYear = 100)
+    public int CurrentYear = 0;
+    public List<int> Deaths = new();
+    public List<int> DeltaDeaths = new();
+    public List<int> DeltaNewPeople = new();
+    public List<int> Lifespans = new();
+    public List<double> MeanAge = new();
+    public List<int> NetPopDelta = new();
+    public List<int> NewPeople = new();
+    public int NewPersonCount = 0;
+    public List<double> PopulationCount = new();
+    public List<int> Surnames = new();
+    public List<double> TimeTaken = new();
+
+    private DateTime LastTimeStatsPrinted;
+    private int OldDeaths;
+    private int OldPeople;
+
+    public Stats(DateTime initialTime, IReadOnlyList<Person> people, int yearToPrintStats = 100)
     {
-        TimeTaken = new List<double>();
-        Population = new List<double>();
-        MeanAge = new List<double>();
-        NewPeople = new List<double>();
-        Deaths = new List<double>();
-        DeltaNewPeople = new List<double>();
-        Surnames = new List<int>();
-        DeltaDeaths = new List<double>();
-        NetPopDelta = new List<double>();
-        Year = 0;
-        StatYear = statYear;
-        OldDate = oldDate;
+        YearToPrintStats = yearToPrintStats;
+        LastTimeStatsPrinted = initialTime;
         _people = people;
-        NewPersonCount = 0;
-        OldDeaths = 0;
-        OldPeople = 0;
     }
 
     public void PrintStats()
     {
-        var statYear = StatYear;
+        var statYear = YearToPrintStats;
 
-        if (Year % statYear != 0)
+        if (CurrentYear % statYear != 0)
         {
-            statYear = Year % StatYear;
+            statYear = CurrentYear % YearToPrintStats;
         }
 
-        var delta = StatsHelper.GetTimeDelta(OldDate, DateTime.Now);
+        var delta = StatsHelper.GetTimeDelta(LastTimeStatsPrinted, DateTime.Now);
         var timeTaken = (int)Math.Floor(delta / 1000.0);
 
         if (timeTaken < 1)
@@ -59,7 +49,7 @@ public class Stats
         TimeTaken.Add(timeTaken);
 
         var population = _people.Count;
-        Population.Add(population);
+        PopulationCount.Add(population);
 
         var meanAge = _people.Count > 0 ? (int)Math.Floor(_people.AsParallel().Select(p => p.CurrentAge).Average()) : 0;
         MeanAge.Add(meanAge);
@@ -69,7 +59,9 @@ public class Stats
         OldPeople = NewPersonCount;
         DeltaNewPeople.Add(peopleDelta);
 
-        var surnameCount = _people.Count > 0 ? StatsHelper.CountItems(_people.AsParallel().Select(p => p.CurrentSurname)) : 0;
+        var surnameCount =
+            _people.Count > 0 ? _people.AsParallel().Select(p => p.CurrentSurname).Distinct().Count() : 0;
+
         Surnames.Add(surnameCount);
 
         Deaths.Add(Person.Deaths);
@@ -83,8 +75,11 @@ public class Stats
         var pairCount = _people.Count(p => p.Partner != null);
 
         Console.WriteLine(DateTime.Now);
-        Console.WriteLine($"Time taken: {timeTaken} seconds ({(int)Math.Floor(delta / statYear):F1} milliseconds / year)");
-        Console.WriteLine($"Current population size at year {Year}: {population}");
+
+        Console.WriteLine(
+            $"Time taken: {timeTaken} seconds ({(int)Math.Floor(delta / statYear):F1} milliseconds / year)");
+
+        Console.WriteLine($"Current population size at year {CurrentYear}: {population}");
         Console.WriteLine($"Current mean age: {meanAge:F1}");
         Console.WriteLine($"Current new people: {NewPersonCount}");
         Console.WriteLine($"Current deaths: {Person.Deaths}");
@@ -97,7 +92,7 @@ public class Stats
 
         Console.WriteLine($"Net population per year: {netPop:F1}");
         Console.WriteLine();
-        OldDate = DateTime.Now;
+        LastTimeStatsPrinted = DateTime.Now;
     }
 }
 

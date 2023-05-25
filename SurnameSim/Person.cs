@@ -44,9 +44,10 @@ public class Person
             CurrentName += 1;
             CurrentSurname = CurrentName;
 
-            //Start the initial population out with a random age, no greater than 80% of their death age
-            //Real-world global average age is ~30
-            CurrentAge = (int)Math.Min(MaxAge * 0.8, RandomGenerator.GenerateGaussianRandomNumber(30, 3.5));
+            // Start the initial population out with a random age, no greater than 80% of their death age
+            // Real-world global average age is ~30
+            // Setting this to 20 since the child / partner age is around there
+            CurrentAge = (int)Math.Min(MaxAge * 0.8, RandomGenerator.GenerateGaussianRandomNumber(20, 3));
         }
         else
         {
@@ -117,7 +118,7 @@ public class Person
         }
 
         // normalize age to [0, 1]
-        var percentAge = 1.0 - (MaxAge - CurrentAge) / (float)MaxAge;
+        var normalizedAge = 1.0 - (MaxAge - CurrentAge) / (float)MaxAge;
 
         // get a random [0, 1] with an exponential distribution.
         // Magic numbers were determined experimentally, seeing what allowed population growth, and then by checking the distribution using pyplot
@@ -125,7 +126,7 @@ public class Person
 
         // random accidents happen, so even if they haven't reached their max age,
         // there is some risk of death, especially as they get closer to their max age
-        return percentAge > randDeathPercent && Die();
+        return normalizedAge > randDeathPercent && Die();
     }
 
     public void GainChild()

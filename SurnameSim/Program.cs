@@ -7,7 +7,7 @@ using SurnameSim;
 var people = new List<Person>(Enumerable.Range(0, 10000).AsParallel().Select(_ => new Person(0)));
 var stats = new Stats(DateTime.Now, people);
 
-double Sim()
+int Sim()
 {
     AgeSim(); // Age the whole simulation, removing those that die
     GainPartners(); // Pair up eligible people objects
@@ -22,6 +22,7 @@ void AgeSim()
     foreach (var p in people.ToList().AsParallel().Where(p => p.Age()))
     {
         people.Remove(p);
+        stats.Lifespans.Add(p.CurrentAge);
     }
 }
 
@@ -51,24 +52,24 @@ void GainPartners()
     }
 }
 
-double HaveChildren()
+int HaveChildren()
 {
-    double newCount = 0;
+    var newPeople = 0;
 
     foreach (var newChild in people.ToList()
                  .AsParallel()
                  .Where(p => p.WithChild)
-                 .Select(p => p.HaveChild(stats.Year, 1.0)))
+                 .Select(p => p.HaveChild(stats.CurrentYear, 1.0)))
     {
         if (newChild != null)
         {
             people.Add(newChild);
 
-            newCount++;
+            newPeople++;
         }
     }
 
-    return newCount;
+    return newPeople;
 }
 
 void GainChildren()
@@ -78,7 +79,7 @@ void GainChildren()
 
 foreach (var year in Enumerable.Range(0, 30))
 {
-    stats.Year = year;
+    stats.CurrentYear = year;
 
     if (people.Count == 0)
     {
@@ -88,7 +89,7 @@ foreach (var year in Enumerable.Range(0, 30))
         break;
     }
 
-    if (year % (int)stats.StatYear == 0)
+    if (year % stats.YearToPrintStats == 0)
     {
         stats.PrintStats();
     }
