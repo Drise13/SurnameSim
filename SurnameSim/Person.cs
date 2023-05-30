@@ -120,9 +120,8 @@ public class Person
         // normalize age to [0, 1]
         var normalizedAge = 1.0 - (MaxAge - CurrentAge) / (float)MaxAge;
 
-        // get a random [0, 1] with an exponential distribution.
-        // Magic numbers were determined experimentally, seeing what allowed population growth, and then by checking the distribution using pyplot
-        var randDeathPercent = 1.0 - RandomGenerator.GetRandomExponential(0.05) * 2.0;
+
+        var randDeathPercent = RandomGenerator.GetRandomDeathChance();
 
         // random accidents happen, so even if they haven't reached their max age,
         // there is some risk of death, especially as they get closer to their max age

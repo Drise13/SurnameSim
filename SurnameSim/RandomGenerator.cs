@@ -2,6 +2,7 @@
 
 using MoreLinq;
 using System;
+using System.Net.NetworkInformation;
 
 /// <summary>
 ///     Convenience class for dealing with randomness.
@@ -94,6 +95,8 @@ public static class RandomGenerator
     };
 
     private static readonly List<int> MaxAgeDistribution;
+    private static readonly double[] DeathPercentageDistribution;
+    private static int deathPercentagePosition;
 
     static RandomGenerator()
     {
@@ -114,6 +117,8 @@ public static class RandomGenerator
 
         MaxAgeDistribution.TrimExcess();
         MaxChildDistribution.TrimExcess();
+
+        DeathPercentageDistribution = Enumerable.Range(0, 100000).Select(_ => 1.0 - GetRandomExponential(0.05) * 2.0).ToArray();
     }
 
     private static int GetRandomAgeTo80()
@@ -153,6 +158,15 @@ public static class RandomGenerator
     public static double GetRandomExponential(double scale)
     {
         return -Math.Log(ThreadLocalRandom.NextDouble()) * scale;
+    }
+
+    // get a random [0, 1] with an exponential distribution.
+    // Magic numbers were determined experimentally, seeing what allowed population growth, and then by checking the distribution using pyplot
+    public static double GetRandomDeathChance()
+    {
+        Interlocked.Increment(ref deathPercentagePosition);
+
+        return DeathPercentageDistribution[deathPercentagePosition % DeathPercentageDistribution.Length];
     }
 
     public static double GenerateGaussianRandomNumber(double mean, double standardDeviation)
