@@ -1,5 +1,10 @@
 ﻿namespace SurnameSim;
 
+using System.Numerics;
+
+using MathNet.Numerics.Statistics;
+using static System.Runtime.InteropServices.JavaScript.JSType;
+
 public class Stats
 {
     public readonly int YearToPrintStats;
@@ -38,15 +43,15 @@ public class Stats
             statYear = CurrentYear % YearToPrintStats;
         }
 
-        var delta = StatsHelper.GetTimeDelta(LastTimeStatsPrinted, DateTime.Now);
-        var timeTaken = (int)Math.Floor(delta / 1000.0);
+        var timeDeltaMs = StatsHelper.GetTimeDelta(LastTimeStatsPrinted, DateTime.Now);
+        var timeTaken = timeDeltaMs / 1000.0;
 
-        if (timeTaken < 1)
-        {
-            Thread.Sleep(1000); // don't spam the console output
-        }
+        //if (timeTaken < 1)
+        //{
+        //    Thread.Sleep(1000); // don't spam the console output
+        //}
 
-        TimeTaken.Add(timeTaken);
+        TimeTaken.Add(timeDeltaMs);
 
         var population = _people.Count;
         PopulationCount.Add(population);
@@ -77,20 +82,24 @@ public class Stats
         Console.WriteLine(DateTime.Now);
 
         Console.WriteLine(
-            $"Time taken: {timeTaken} seconds ({(int)Math.Floor(delta / statYear):F1} milliseconds / year)");
+            $"Time taken: {timeTaken:F3} seconds ({timeDeltaMs / statYear:F} milliseconds / year)");
 
         Console.WriteLine($"Current population size at year {CurrentYear}: {population}");
-        Console.WriteLine($"Current mean age: {meanAge:F1}");
-        Console.WriteLine($"Current new people: {NewPersonCount}");
-        Console.WriteLine($"Current deaths: {Person.Deaths}");
-        Console.WriteLine($"Current delta new people: {peopleDelta} ({peopleDelta / statYear:F1} people / year)");
-        Console.WriteLine($"Current delta deaths: {deathsDelta} ({deathsDelta / statYear:F1} deaths / year)");
+        Console.WriteLine($"Current mean age: {meanAge:F}");
+        Console.WriteLine($"Current median death age: {Lifespans.ConvertAll(x => (double)x).Median():F}");
+        Console.WriteLine($"Current mode death age: {Lifespans.Mode():F}");
+        Console.WriteLine($"Current mode max age: {_people.Select(p => p.MaxAge).Mode():F}");
+        Console.WriteLine($"Current max death age: {Lifespans.DefaultIfEmpty(0).Max():F}");
+        Console.WriteLine($"Total   new people: {NewPersonCount}");
+        Console.WriteLine($"Total   deaths: {Person.Deaths}");
+        Console.WriteLine($"Current delta new people: {peopleDelta} ({peopleDelta / (double)statYear:F} people / year)");
+        Console.WriteLine($"Current delta deaths: {deathsDelta} ({deathsDelta / (double)statYear:F} deaths / year)");
         Console.WriteLine($"Current surname count: {surnameCount}");
 
         Console.WriteLine(
-            $"Current partner percentage: {(_people.Count > 0 ? pairCount / (double)population * 100 : 0):F1}");
+            $"Current partner percentage: {(_people.Count > 0 ? pairCount / (double)population * 100 : 0):F}");
 
-        Console.WriteLine($"Net population per year: {netPop:F1}");
+        Console.WriteLine($"Net population per year: {netPop}");
         Console.WriteLine();
         LastTimeStatsPrinted = DateTime.Now;
     }
@@ -105,8 +114,10 @@ public static class StatsHelper
         return span.TotalMilliseconds;
     }
 
-    public static int CountItems<T>(IEnumerable<T> items)
+    public static T Mode<T>(this IEnumerable<T> enumerable) where T : INumber<T>
     {
-        return items.Distinct().Count();
+        var modeItem = enumerable.DefaultIfEmpty(T.Zero).GroupBy(v => v).MaxBy(g => g.Count());
+
+        return modeItem != null ? modeItem.Key : T.Zero;
     }
 }

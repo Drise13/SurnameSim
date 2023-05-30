@@ -1,11 +1,11 @@
-// See https://aka.ms/new-console-template for more information
+﻿// See https://aka.ms/new-console-template for more information
 
 using MoreLinq;
 
 using SurnameSim;
 
 var people = new List<Person>(Enumerable.Range(0, 10000).AsParallel().Select(_ => new Person(0)));
-var stats = new Stats(DateTime.Now, people);
+var stats = new Stats(DateTime.Now, people, 100);
 
 int Sim()
 {
@@ -19,11 +19,11 @@ int Sim()
 
 void AgeSim()
 {
-    foreach (var p in people.ToList().AsParallel().Where(p => p.Age()))
-    {
-        people.Remove(p);
-        stats.Lifespans.Add(p.CurrentAge);
-    }
+    var deadPersons = people.AsParallel().Where(p => p.Age()).ToList();
+    var exclusionSet = MoreLinq.Extensions.ToHashSetExtension.ToHashSet(deadPersons);
+
+    people.RemoveAll(exclusionSet.Contains);
+    stats.Lifespans.AddRange(deadPersons.Select(p => p.CurrentAge));
 }
 
 void GainPartners()
@@ -77,7 +77,7 @@ void GainChildren()
     people.AsParallel().ForEach(p => p.GainChild());
 }
 
-foreach (var year in Enumerable.Range(0, 30))
+foreach (var year in Enumerable.Range(0, 10000))
 {
     stats.CurrentYear = year;
 
